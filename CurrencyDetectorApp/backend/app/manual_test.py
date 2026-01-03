@@ -8,6 +8,11 @@ import os
 from pathlib import Path
 import requests
 from PIL import Image
+from utils.inference import init_detector
+from config import BINARY_MODEL, BANKNOTE_MODEL, COIN_MODEL, DEVICE
+import cv2
+import numpy as np
+import time
 import io
 
 # Configuration
@@ -111,22 +116,26 @@ def test_config():
 
 
 def test_inference_local():
-    """Test inference module locally"""
     print("\n" + "=" * 70)
     print("TEST 4: Local Inference")
     print("=" * 70)
 
     try:
-        from utils.inference import detector
-        from PIL import Image
+        from utils.inference import init_detector
 
-        print_success("Detector imported successfully")
+        model_paths = {
+            "binary": BINARY_MODEL,
+            "banknote": BANKNOTE_MODEL,
+            "coin": COIN_MODEL
+        }
 
-        # Create test image
-        test_img = Image.new('RGB', (640, 640), color='white')
+        detector = init_detector(model_paths, DEVICE)
+        print_success("Detector initialized successfully")
+
+        # Create test image (numpy, BGR)
+        test_img = np.ones((640, 640, 3), dtype=np.uint8) * 255
         print_info("Created test image (640x640)")
 
-        # Run detection
         result = detector.detect(test_img)
 
         print_success("Detection completed")
@@ -134,11 +143,13 @@ def test_inference_local():
         print_info(f"Detections: {len(result.get('detections', []))}")
 
         return True
+
     except Exception as e:
         print_error(f"Inference error: {e}")
         import traceback
         traceback.print_exc()
         return False
+
 
 
 def test_tts():
@@ -148,8 +159,10 @@ def test_tts():
     print("=" * 70)
 
     try:
+        # Import the updated TTS class using Windows voices
         from utils.tts import TextToSpeech
 
+        # Initialize TTS (language mk = Macedonian)
         tts = TextToSpeech(language="mk")
         print_success("TTS initialized")
 
@@ -163,8 +176,13 @@ def test_tts():
         message = tts.generate_currency_message(test_result)
         print_info(f"Generated message: {message}")
 
-        print_info("Testing speech (should hear audio)...")
-        tts.speak("Тест")
+        # Speak the message (Windows TTS, Macedonian Latin)
+        print_info("Testing speech (you should hear audio)...")
+        tts.speak(message)
+
+        # Optional: give time for audio to finish
+        import time
+        time.sleep(3)
 
         print_success("TTS test completed")
         return True
@@ -173,8 +191,9 @@ def test_tts():
         return False
 
 
+
 def test_detection_with_image(image_path):
-    """Test detection with real image"""
+    """Test detection with real image and speak results"""
     print("\n" + "=" * 70)
     print("TEST 6: Detection with Image")
     print("=" * 70)
@@ -197,13 +216,18 @@ def test_detection_with_image(image_path):
             print_info(f"Type: {result.get('type')}")
             print_info(f"Detections: {result.get('detections', [])}")
 
-            # Show details
+            # Show detection details
             if result.get('detections'):
                 print("\n  Detection details:")
                 for i, det in enumerate(result['detections'], 1):
                     print(f"    {i}. {det.get('class_name', 'Unknown')}")
                     print(f"       Confidence: {det.get('confidence', 0):.2%}")
                     print(f"       BBox: {det.get('bbox', {})}")
+
+            # Speak the result using TTS
+            from utils.tts import get_tts
+            tts = get_tts(language="mk")  # Macedonian
+            tts.announce_detection(result)  # This will speak the message
 
             return True
         else:
@@ -216,7 +240,6 @@ def test_detection_with_image(image_path):
         import traceback
         traceback.print_exc()
         return False
-
 
 def test_preprocessing():
     """Test image preprocessing"""

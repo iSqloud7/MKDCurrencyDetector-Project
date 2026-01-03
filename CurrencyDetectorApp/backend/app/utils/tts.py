@@ -1,98 +1,64 @@
+import asyncio
+import time
+import edge_tts
 from typing import Optional, Dict, Any
-
+from playsound import playsound
 
 class TextToSpeech:
-
     def __init__(self, language: str = "mk"):
         self.language = language
-        self.engine = None
+        self.voice = "mk-MK-MarijaNeural" if language == "mk" else "en-US-GuyNeural"
 
+    def speak(self, text: str, voice: Optional[str] = None) -> bool:
+        voice = voice or self.voice
         try:
-            import pyttsx3
-            self.engine = pyttsx3.init()
-
-            self.engine.setProperty('rate', 150)
-            self.engine.setProperty('volume', 0.9)
-
-            voices = self.engine.getProperty('voices')
-            if voices:
-                self.engine.setProperty('voice', voices[0].id)
-
-            print("TTS initialized successfully!")
-        except Exception as e:
-            print(f"Failed to initialize TTS: {e}")
-            self.engine = None
-
-    def speak(self, text: str, save_to_file: Optional[str] = None) -> bool:
-        if not self.engine or not text:
-            return False
-
-        try:
-            if save_to_file:
-                self.engine.save_to_file(text, save_to_file)
-                self.engine.runAndWait()
-            else:
-                self.engine.say(text)
-                self.engine.runAndWait()
+            filename = f"tts_{int(time.time() * 1000)}.mp3"  # unique file
+            asyncio.run(edge_tts.Communicate(text, voice).save(filename))
+            playsound(filename)
             return True
         except Exception as e:
-            print(f"TTS error: {e}")
+            print(f"❌ Edge TTS error: {e}")
             return False
 
-    def generate_currency_message(self, detection_result: Dict[str, Any]) -> str:
-        if not detection_result.get("success"):
-            return "Грешка при детекција!" if self.language == "mk" else "Detection error!"
+    def generate_currency_message(self, detection_result: dict) -> str:
+        MKD_CURRENCY_NAMES = {
+            "10_note": "10 денари",
+            "50_note": "50 денари",
+            "5_coin": "5 денари",
+            "1_coin": "1 денар"
+        }
 
-        currency_type = detection_result.get("type", "none")
         detections = detection_result.get("detections", [])
-        count = len(detections)
+        if not detections:
+            return "Не е детектирана валута" if self.language == "mk" else "No currency detected"
 
-        if currency_type == "none" or count == 0:
-            return "Не е детектирана валута!" if self.language == "mk" else "No currency detected!"
-
-        if self.language == "mk":
-            type_str = "банкнота" if currency_type == "banknote" else "монета"
-
-            if count == 1:
-                det = detections[0]
-                class_name = det.get('class_name', 'unknown')
-                return f"Детектирана {type_str}: {class_name}"
-            else:
-                return f"Детектирани {count} {type_str}"
+        det_name = detections[0]["class_name"].replace("_", " ")
+        if det_name.endswith("note"):
+            type_str = "банкнота" if self.language == "mk" else "banknote"
+        elif det_name.endswith("coin"):
+            type_str = "монета" if self.language == "mk" else "coin"
         else:
-            type_str = "banknote" if currency_type == "banknote" else "coin"
+            type_str = "валута" if self.language == "mk" else "currency"
 
-            if count == 1:
-                det = detections[0]
-                return f"Detected {type_str}: {det['class_name']}"
-            else:
-                return f"Detected {count} {type_str}s"
+        # Map class name to readable MKD currency
+        det_name = MKD_CURRENCY_NAMES.get(detections[0]["class_name"], det_name.rsplit(" ", 1)[0])
 
-    def get_speech_text(self, detection_result: Dict[str, Any]) -> str:
-        return self.generate_currency_message(detection_result)
+        count = len(detections)
+        if count == 1:
+            return f"Детектирана {type_str}: {det_name}" if self.language == "mk" else f"Detected {type_str}: {det_name}"
+        else:
+            return f"Детектирани {count} {type_str}и" if self.language == "mk" else f"Detected {count} {type_str}s"
 
-    def announce_detection(self, detection_result: Dict[str, Any],
-                           save_to_file: Optional[str] = None) -> bool:
+    def announce_detection(self, detection_result: Dict[str, Any]) -> bool:
         message = self.generate_currency_message(detection_result)
-        print(f"TTS: {message}")
-        return self.speak(message, save_to_file)
+        print(f"🔊 TTS: {message}")
+        return self.speak(message)
 
-
-_tts = None
-
+_tts_instance: TextToSpeech = None
 
 def get_tts(language: str = "mk") -> TextToSpeech:
-    global _tts
-    if _tts is None:
-        _tts = TextToSpeech(language=language)
-    return _tts
-
-
-def speak(text: str, language: str = "mk") -> bool:
-    tts = get_tts(language)
-    return tts.speak(text)
-
-
-def announce_currency(detection_result: Dict[str, Any], language: str = "mk") -> bool:
-    tts = get_tts(language)
-    return tts.announce_detection(detection_result)
+    """Return a singleton TTS instance"""
+    global _tts_instance
+    if _tts_instance is None:
+        _tts_instance = TextToSpeech(language=language)
+    return _tts_instance
