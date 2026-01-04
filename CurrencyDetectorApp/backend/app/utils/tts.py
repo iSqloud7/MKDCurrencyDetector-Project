@@ -2,7 +2,7 @@ import asyncio
 import time
 import edge_tts
 from typing import Optional, Dict, Any
-from playsound import playsound
+from playsound3 import playsound
 
 class TextToSpeech:
     def __init__(self, language: str = "mk"):
