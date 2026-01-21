@@ -113,17 +113,109 @@ class CurrencyDetector:
 
         return matched_dets if matched_dets else specific_dets
 
+    # def detect(self, image: np.ndarray, use_preprocessing: bool = True,
+    #            use_ensemble: bool = True) -> Dict:
+    #
+    #     if use_preprocessing:
+    #         processed_image, scale = preprocess_image(image)
+    #     else:
+    #         processed_image = image
+    #         scale = 1.0
+    #
+    #     binary_dets = self.detect_with_confidence_filter(
+    #         processed_image,
+    #         self.models['binary'],
+    #         self.binary_threshold
+    #     )
+    #
+    #     if not binary_dets:
+    #         return {
+    #             'success': False,
+    #             'message': 'Не е детектирана валута!',
+    #             'type': None,
+    #             'detections': []
+    #         }
+    #
+    #     currency_type = binary_dets[0]['class_name']
+    #
+    #     if currency_type == 'note':
+    #         specific_model = self.models.get('banknote')
+    #         conf_threshold = self.banknote_threshold
+    #         type_name = 'banknote'
+    #     else:
+    #         specific_model = self.models.get('coin')
+    #         conf_threshold = self.coin_threshold
+    #         type_name = 'coin'
+    #
+    #     if specific_model is None:
+    #         return {
+    #             'success': False,
+    #             'message': f'{type_name} модел не е вчитан!',
+    #             'type': currency_type,
+    #             'detections': []
+    #         }
+    #
+    #     specific_dets = self.detect_with_confidence_filter(
+    #         processed_image,
+    #         specific_model,
+    #         conf_threshold
+    #     )
+    #
+    #     if not specific_dets:
+    #         return {
+    #             'success': False,
+    #             'message': f'Не е детектирана специфична класа за {type_name}!',
+    #             'type': currency_type,
+    #             'detections': []
+    #         }
+    #
+    #     final_dets = (
+    #         self.ensemble_vote(binary_dets, specific_dets)
+    #         if use_ensemble else specific_dets
+    #     )
+    #
+    #     final_dets.sort(
+    #         key=lambda x: x.get('ensemble_confidence', x['confidence']),
+    #         reverse=True
+    #     )
+    #
+    #     MIN_FINAL_CONFIDENCE = 0.4
+    #     final_dets = [
+    #         d for d in final_dets
+    #         if d.get('ensemble_confidence', d['confidence']) >= MIN_FINAL_CONFIDENCE
+    #     ]
+    #
+    #     if not final_dets:
+    #         return {
+    #             'success': False,
+    #             'message': 'Детекцијата е со ниска сигурност!',
+    #             'type': currency_type,
+    #             'detections': []
+    #         }
+    #
+    #     for det in final_dets:
+    #         x1, y1, x2, y2 = det["bbox"]
+    #         det["bbox"] = [
+    #             x1 / scale,
+    #             y1 / scale,
+    #             x2 / scale,
+    #             y2 / scale,
+    #         ]
+    #
+    #     return {
+    #         'success': True,
+    #         'type': currency_type,
+    #         'detections': final_dets,
+    #         'message': f'Детектирани {len(final_dets)} објекти!'
+    #     }
+
     def detect(self, image: np.ndarray, use_preprocessing: bool = True,
                use_ensemble: bool = True) -> Dict:
 
-        if use_preprocessing:
-            processed_image, scale = preprocess_image(image)
-        else:
-            processed_image = image
-            scale = 1.0
+        binary_image, binary_scale = preprocess_image(image)
 
         binary_dets = self.detect_with_confidence_filter(
-            processed_image,
+            binary_image,
             self.models['binary'],
             self.binary_threshold
         )
@@ -136,24 +228,20 @@ class CurrencyDetector:
                 'detections': []
             }
 
-        currency_type = binary_dets[0]['class_name']
+        best_binary = max(binary_dets, key=lambda d: d['confidence'])
+        currency_type = best_binary['class_name']
 
         if currency_type == 'note':
-            specific_model = self.models.get('banknote')
+            processed_image, scale = preprocess_image(image)
+            specific_model = self.models['banknote']
             conf_threshold = self.banknote_threshold
             type_name = 'banknote'
         else:
-            specific_model = self.models.get('coin')
+            processed_image = image
+            scale = 1.0
+            specific_model = self.models['coin']
             conf_threshold = self.coin_threshold
             type_name = 'coin'
-
-        if specific_model is None:
-            return {
-                'success': False,
-                'message': f'{type_name} модел не е вчитан!',
-                'type': currency_type,
-                'detections': []
-            }
 
         specific_dets = self.detect_with_confidence_filter(
             processed_image,
@@ -169,23 +257,10 @@ class CurrencyDetector:
                 'detections': []
             }
 
-        final_dets = (
-            self.ensemble_vote(binary_dets, specific_dets)
-            if use_ensemble else specific_dets
-        )
+        best_specific = max(specific_dets, key=lambda d: d['confidence'])
 
-        final_dets.sort(
-            key=lambda x: x.get('ensemble_confidence', x['confidence']),
-            reverse=True
-        )
-
-        MIN_FINAL_CONFIDENCE = 0.4
-        final_dets = [
-            d for d in final_dets
-            if d.get('ensemble_confidence', d['confidence']) >= MIN_FINAL_CONFIDENCE
-        ]
-
-        if not final_dets:
+        final_conf = best_specific['confidence']
+        if final_conf < 0.4:
             return {
                 'success': False,
                 'message': 'Детекцијата е со ниска сигурност!',
@@ -193,20 +268,19 @@ class CurrencyDetector:
                 'detections': []
             }
 
-        for det in final_dets:
-            x1, y1, x2, y2 = det["bbox"]
-            det["bbox"] = [
-                x1 / scale,
-                y1 / scale,
-                x2 / scale,
-                y2 / scale,
-            ]
+        x1, y1, x2, y2 = best_specific["bbox"]
+        best_specific["bbox"] = [
+            x1 / scale,
+            y1 / scale,
+            x2 / scale,
+            y2 / scale,
+        ]
 
         return {
             'success': True,
             'type': currency_type,
-            'detections': final_dets,
-            'message': f'Детектирани {len(final_dets)} објекти!'
+            'detections': [best_specific],
+            'message': 'Детектиран еден објект!'
         }
 
 

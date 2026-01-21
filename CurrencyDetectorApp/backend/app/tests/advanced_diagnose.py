@@ -14,7 +14,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from core.config import BINARY_MODEL, BANKNOTE_MODEL, COIN_MODEL, DEVICE
 from services.inference import CurrencyDetector
 
-
 def test_with_threshold(detector, image, binary_thresh, specific_thresh, name):
     """Test detection with specific thresholds."""
     print(f"\n{'='*70}")
