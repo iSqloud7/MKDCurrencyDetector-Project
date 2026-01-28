@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+// Го претставува копчето за сликање
 class CaptureButton extends StatelessWidget {
   final VoidCallback onPressed;
   final bool isLoading;

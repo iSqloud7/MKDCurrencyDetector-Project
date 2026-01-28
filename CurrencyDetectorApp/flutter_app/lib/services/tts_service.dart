@@ -1,5 +1,6 @@
 import 'package:flutter_tts/flutter_tts.dart';
 
+// Сервис за звучно читање на детекцијата
 class TtsService {
   final FlutterTts _tts = FlutterTts();
   bool _isInitialized = false;
@@ -10,7 +11,8 @@ class TtsService {
 
   Future<void> _initialize() async {
     try {
-      // Пробај Македонски, ако не успее користи English
+      // Поставување на јазик
+      // Доколку има македонски, ако не успее користи англиски
       for (var code in ['mk-MK', 'mk', 'en-US']) {
         var result = await _tts.setLanguage(code);
         print("Setting TTS language $code: result $result");
@@ -21,14 +23,13 @@ class TtsService {
       await _tts.setVolume(1.0);
       await _tts.setPitch(1.0);
 
-      // Чекај да заврши говор
       await _tts.awaitSpeakCompletion(true);
 
       _isInitialized = true;
-      print("✅ TTS Initialized");
+      print("TTS Initialized");
     } catch (e) {
       _isInitialized = false;
-      print('❌ TTS init error: $e');
+      print('TTS init error: $e');
     }
   }
 
@@ -39,7 +40,7 @@ class TtsService {
       await Future.delayed(const Duration(milliseconds: 50));
       await _tts.speak(text);
     } catch (e) {
-      print('❌ TTS speak error: $e');
+      print('TTS speak error: $e');
     }
   }
 

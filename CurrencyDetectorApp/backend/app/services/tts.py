@@ -9,13 +9,14 @@ AUDIO_OUTPUT_DIR = Path(__file__).resolve().parent.parent / "tests" / "audio"
 AUDIO_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 
+# Модул кој гласно ја соопштува детектиранта валута, според резултатот од детекцијата
 class TextToSpeech:
     # Сите македонски валути
     MKD_CURRENCY_NAMES = {
         "2000_note": "две илјади денари",
         "1000_note": "илјада денари",
         "500_note": "петстотини денари",
-        "200_note": "двестотини денари",
+        "200_note": "двесте денари",
         "100_note": "сто денари",
         "50_note": "педесет денари",
         "10_note": "десет денари",
@@ -30,6 +31,9 @@ class TextToSpeech:
         self.language = language
         self.voice = "mk-MK-MarijaNeural" if language == "mk" else "en-US-GuyNeural"
 
+    # Зборување - Креира уникатер MP3 фајл
+    # Преку _save_tts го генерира говорот
+    # Го враќа звукот (playsound) и доколку е успешно враќа True
     def speak(self, text: str, voice: Optional[str] = None) -> bool:
         voice = voice or self.voice
         try:
@@ -46,6 +50,9 @@ class TextToSpeech:
         communicate = edge_tts.Communicate(text, voice)
         await communicate.save(str(filename))
 
+    # Доколку нема детекција - изговара „Не е детектирана валута!“,
+    # Доколку има детекција го зема првиот објект. оној што најдбро е детектиран,
+    # Го претвора во природен говор, Прави разлика меѓу банкнота и монета и генерира реченица
     def generate_currency_message(self, detection_result: dict) -> str:
         detections = detection_result.get("detections", [])
         if not detections:
@@ -79,7 +86,6 @@ class TextToSpeech:
         if play_audio:
             return self.speak(message)
         return True
-
 
 # Singleton pattern
 _tts_instance: Optional[TextToSpeech] = None

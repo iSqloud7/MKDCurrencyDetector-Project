@@ -6,7 +6,7 @@ class ApiConfig {
   // static const String baseUrl = 'http://localhost:8000';
 
   // За физички уред (замени со твојата IP)
-  static const String baseUrl = 'http://10.139.89.12:8000';
+  static const String baseUrl = 'http://10.37.134.202:8000';
 
   static const String detectEndpoint = '/detect';
   static const String healthEndpoint = '/health';

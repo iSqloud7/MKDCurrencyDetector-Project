@@ -6,6 +6,10 @@ import '../models/detection_result.dart';
 import 'image_preprocessor.dart';
 import 'package:http_parser/http_parser.dart';
 
+// Комуникација со серверот
+// праќа слика до backend
+// прима JSON со резултат од детекција
+// проверува дали работи серверот
 class ApiService {
   Future<DetectionResult?> detectCurrency(File imageFile) async {
     try {
@@ -28,11 +32,11 @@ class ApiService {
         final jsonData = json.decode(response.body) as Map<String, dynamic>;
         return DetectionResult.fromJson(jsonData);
       } else {
-        print('❌ API returned error: ${response.statusCode}');
+        print('API returned error: ${response.statusCode}');
         return null;
       }
     } catch (e) {
-      print("❌ API Error: $e");
+      print("API Error: $e");
       return null;
     }
   }
@@ -43,7 +47,7 @@ class ApiService {
       final response = await http.get(uri).timeout(const Duration(seconds: 5));
       return response.statusCode == 200;
     } catch (e) {
-      print("❌ Health check failed: $e");
+      print("Health check failed: $e");
       return false;
     }
   }

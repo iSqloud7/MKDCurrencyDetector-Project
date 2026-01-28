@@ -13,7 +13,7 @@ from core.logging import get_logger
 
 logger = get_logger(__name__)
 
-
+# Централна класа која ги содржи: моделите, threshold вредност, како и целата логика за детекција
 class CurrencyDetector:
     def __init__(self, model_paths: Dict[str, str], device: str = DEVICE):
         self.device = device
@@ -26,12 +26,15 @@ class CurrencyDetector:
 
         for name, path in model_paths.items():
             try:
+                # Динамичко вчитување на модели
+                # Ако моделот не се вчита, тогаш апликацијата ќе се стопира
                 self.models[name] = YOLO(str(path))
                 logger.info(f"Loaded {name} model from {path}")
             except Exception as e:
                 logger.error(f"Failed to load {name} model: {e}")
                 raise
 
+# Го пушта YOLO моделот, ги вчитува bounding boxes и ги враќа како Python dict
     def detect_with_confidence_filter(
             self,
             image: np.ndarray,
@@ -46,7 +49,7 @@ class CurrencyDetector:
                 iou=self.iou_threshold,
                 verbose=False
             )
-
+            # Ги извлекува резултатите во формат компатибилен со Flutter JSON
             detections = []
             for result in results:
                 boxes = result.boxes
@@ -64,6 +67,9 @@ class CurrencyDetector:
             logger.error(f"Detection failed: {e}")
             return []
 
+    # Пресметува Intersection over Union
+    # Претставува мерка за преклопување на два bounding box-а
+    # Се користи за ensemble voting
     @staticmethod
     def calculate_iou(box1: List[float], box2: List[float]) -> float:
         x1_min, y1_min, x1_max, y1_max = box1
@@ -83,6 +89,9 @@ class CurrencyDetector:
 
         return inter_area / union_area if union_area > 0 else 0
 
+    # Комбинира бинарен и специфичен модел
+    # Работи на тој начин што проверува дали bounding box од бинарен модел се преклопува со специфичен модел
+    # Се задржува најдобриот, со најдобар confidence
     def ensemble_vote(self, binary_dets: List[Dict], specific_dets: List[Dict]) -> List[Dict]:
         if not binary_dets or not specific_dets:
             return specific_dets
@@ -113,107 +122,14 @@ class CurrencyDetector:
 
         return matched_dets if matched_dets else specific_dets
 
-    # def detect(self, image: np.ndarray, use_preprocessing: bool = True,
-    #            use_ensemble: bool = True) -> Dict:
-    #
-    #     if use_preprocessing:
-    #         processed_image, scale = preprocess_image(image)
-    #     else:
-    #         processed_image = image
-    #         scale = 1.0
-    #
-    #     binary_dets = self.detect_with_confidence_filter(
-    #         processed_image,
-    #         self.models['binary'],
-    #         self.binary_threshold
-    #     )
-    #
-    #     if not binary_dets:
-    #         return {
-    #             'success': False,
-    #             'message': 'Не е детектирана валута!',
-    #             'type': None,
-    #             'detections': []
-    #         }
-    #
-    #     currency_type = binary_dets[0]['class_name']
-    #
-    #     if currency_type == 'note':
-    #         specific_model = self.models.get('banknote')
-    #         conf_threshold = self.banknote_threshold
-    #         type_name = 'banknote'
-    #     else:
-    #         specific_model = self.models.get('coin')
-    #         conf_threshold = self.coin_threshold
-    #         type_name = 'coin'
-    #
-    #     if specific_model is None:
-    #         return {
-    #             'success': False,
-    #             'message': f'{type_name} модел не е вчитан!',
-    #             'type': currency_type,
-    #             'detections': []
-    #         }
-    #
-    #     specific_dets = self.detect_with_confidence_filter(
-    #         processed_image,
-    #         specific_model,
-    #         conf_threshold
-    #     )
-    #
-    #     if not specific_dets:
-    #         return {
-    #             'success': False,
-    #             'message': f'Не е детектирана специфична класа за {type_name}!',
-    #             'type': currency_type,
-    #             'detections': []
-    #         }
-    #
-    #     final_dets = (
-    #         self.ensemble_vote(binary_dets, specific_dets)
-    #         if use_ensemble else specific_dets
-    #     )
-    #
-    #     final_dets.sort(
-    #         key=lambda x: x.get('ensemble_confidence', x['confidence']),
-    #         reverse=True
-    #     )
-    #
-    #     MIN_FINAL_CONFIDENCE = 0.4
-    #     final_dets = [
-    #         d for d in final_dets
-    #         if d.get('ensemble_confidence', d['confidence']) >= MIN_FINAL_CONFIDENCE
-    #     ]
-    #
-    #     if not final_dets:
-    #         return {
-    #             'success': False,
-    #             'message': 'Детекцијата е со ниска сигурност!',
-    #             'type': currency_type,
-    #             'detections': []
-    #         }
-    #
-    #     for det in final_dets:
-    #         x1, y1, x2, y2 = det["bbox"]
-    #         det["bbox"] = [
-    #             x1 / scale,
-    #             y1 / scale,
-    #             x2 / scale,
-    #             y2 / scale,
-    #         ]
-    #
-    #     return {
-    #         'success': True,
-    #         'type': currency_type,
-    #         'detections': final_dets,
-    #         'message': f'Детектирани {len(final_dets)} објекти!'
-    #     }
 
+    # Детектирање на валута
     def detect(self, image: np.ndarray, use_preprocessing: bool = True,
                use_ensemble: bool = True) -> Dict:
 
         binary_image, binary_scale = preprocess_image(image)
 
+        # Бинарна детекција, доколку нема ништо ќе врати „Не е детектирана валута!“
         binary_dets = self.detect_with_confidence_filter(
             binary_image,
             self.models['binary'],
@@ -228,6 +144,7 @@ class CurrencyDetector:
                 'detections': []
             }
 
+        # Одредување на тип на валута (банкнота или монета)
         best_binary = max(binary_dets, key=lambda d: d['confidence'])
         currency_type = best_binary['class_name']
 
@@ -243,6 +160,8 @@ class CurrencyDetector:
             conf_threshold = self.coin_threshold
             type_name = 'coin'
 
+        # Проверка на специфична детекција, доколку нема ќе врати грешка
+        # „Не е детектирана специфична класа за {type_name}!“
         specific_dets = self.detect_with_confidence_filter(
             processed_image,
             specific_model,
@@ -282,8 +201,6 @@ class CurrencyDetector:
             'detections': [best_specific],
             'message': 'Детектиран еден објект!'
         }
-
-
 detector: Optional[CurrencyDetector] = None
 
 

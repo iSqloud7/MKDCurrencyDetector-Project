@@ -1,3 +1,4 @@
+// Го претставува целосниот резултат од детекцијата
 class DetectionResult {
   final bool success;
   final String? type;
@@ -13,10 +14,12 @@ class DetectionResult {
     this.message,
   });
 
+// Зема JSON објект и го претвора во DetectionResult  објект
   factory DetectionResult.fromJson(Map<String, dynamic> json) {
     return DetectionResult(
       success: json['success'] ?? false,
       type: json['type'],
+
       detections: (json['detections'] as List<dynamic>?)
           ?.map((e) => Detection.fromJson(e))
           .toList() ??
@@ -43,12 +46,13 @@ class DetectionResult {
     }
   }
 
+// Преведување на името на класата во име на валутата на македонски јазик
   String _formatCurrencyName(String className) {
     final Map<String, String> currencyMap = {
       '10_note': 'десет денари',
       '50_note': 'педесет денари',
       '100_note': 'сто денари',
-      '200_note': 'двестотини денари',
+      '200_note': 'двесте денари',
       '500_note': 'петстотини денари',
       '1000_note': 'илјада денари',
       '2000_note': 'две илјади денари',
@@ -62,6 +66,8 @@ class DetectionResult {
   }
 }
 
+// Детекција на објект, која вклучува идентификатор на детекција,
+// класа од моделот, како и колку е сигурен моделот во детекцијата
 class Detection {
   final int id;
   final String className;

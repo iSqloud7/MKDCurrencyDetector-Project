@@ -6,14 +6,19 @@ import '../services/tts_service.dart';
 import '../models/detection_result.dart';
 import '../widgets/capture_button.dart';
 
+// Екран за камера и детекција на валута
+// оваа класа претставува StatefulWidget бидејќи и се менува состојбата
+// како на пример: стартување на камера, сликање, чекање на серверот
+// прикажување на резултат и tts
 class CameraScreen extends StatefulWidget {
   final CameraDescription camera;
   const CameraScreen({super.key, required this.camera});
-
   @override
   State<CameraScreen> createState() => _CameraScreenState();
 }
 
+// Состојба која преку WidgetsBindingObserver овозможува да следиме life
+// Односно апликацијата оди во позадина па се враќа
 class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver {
   late CameraController _controller;
   late Future<void> _initializeCameraFuture;
@@ -26,6 +31,9 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
   String _displayText = "Насочете ја камерата кон валутата";
   DetectionResult? _lastResult;
 
+// Оваа состојба се случува само еднаш, при отварањето на камерата
+// Во тој момент се регистрира life-cycle listener
+// Се иницијализира камерата и се проверува достапност на серверот
   @override
   void initState() {
     super.initState();
@@ -33,7 +41,7 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
     _initializeCamera();
     _checkApiHealth();
   }
-
+// Користи задна камера со висока резолуција и без аудио
   void _initializeCamera() {
     _controller = CameraController(
       widget.camera,
@@ -43,6 +51,7 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
     _initializeCameraFuture = _controller.initialize();
   }
 
+  // Се исклучува камерата, се ослободува TTS и нема memory leaks
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
@@ -51,6 +60,8 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
     super.dispose();
   }
 
+    // Life-cycle менаџмент, односно кога апликацијата оди во позадина - се исклучува
+    // па се враќа - се ре-иницијализира
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (!_controller.value.isInitialized) return;
@@ -66,18 +77,18 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
   Future<void> _checkApiHealth() async {
     final isHealthy = await _api.checkHealth();
     if (!isHealthy && mounted) {
-      _tts.speak("⚠️ Не може да се поврзе со серверот");
+      _tts.speak("Не може да се поврзе со серверот");
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('⚠️ Не може да се поврзе со серверот'),
+          content: Text('Не може да се поврзе со серверот'),
           backgroundColor: Colors.orange,
         ),
       );
     } else if (mounted) {
-      _tts.speak("✅ Поврзан со серверот");
+      _tts.speak("Поврзан со серверот");
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('✅ Поврзан со серверот'),
+          content: Text('Поврзан со серверот'),
           backgroundColor: Colors.green,
           duration: Duration(seconds: 2),
         ),
@@ -85,6 +96,9 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
     }
   }
 
+// Чека да се иницијализира камерата, слика,
+// ја зачувува сликата како File, приказ на „Се обработува...“
+// ја праќа сликата до серверот
   Future<void> _takePicture() async {
     try {
       await _initializeCameraFuture;
@@ -104,7 +118,7 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
       await _processImage(_imageFile!);
 
     } catch (e) {
-      debugPrint("❌ Camera capture error: $e");
+      debugPrint("Camera capture error: $e");
       if (mounted) {
         _tts.speak("Грешка со камерата");
         ScaffoldMessenger.of(context).showSnackBar(
@@ -122,24 +136,20 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
     try {
       result = await _api.detectCurrency(file);
     } catch (e) {
-      debugPrint('❌ Error detecting currency: $e');
+      debugPrint('Error detecting currency: $e');
       result = null;
     }
-
     if (!mounted) return;
-
-    setState(() => _isLoading = false); // Веднаш симнува прогрес бар
-
+    setState(() => _isLoading = false);
     if (result != null) {
       _lastResult = result;
       _displayText = result.toDisplayText();
 
-      // TTS во нова microtask за да не блокира UI
       Future.microtask(() => _tts.speak(_displayText));
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(result.success ? '✅ Детекција успешна' : '❌ Не е пронајдена валута'),
+          content: Text(result.success ? 'Детекција успешна' : 'Не е пронајдена валута'),
           backgroundColor: result.success ? Colors.green : Colors.red,
           duration: const Duration(seconds: 2),
         ),
@@ -149,7 +159,7 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
       Future.microtask(() => _tts.speak(_displayText));
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('❌ Не може да се поврзе со серверот'),
+          content: Text('Не може да се поврзе со серверот'),
           backgroundColor: Colors.red,
         ),
       );
@@ -166,6 +176,7 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
 
   @override
   Widget build(BuildContext context) {
+  // Портокалова позадина, AppBar со наслов
     return Scaffold(
       backgroundColor: Colors.orange[50],
       appBar: AppBar(
@@ -206,6 +217,7 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
                   ),
               ],
             )
+            // Доколку нема слика, пркажува CameraPreview или loader
                 : FutureBuilder<void>(
               future: _initializeCameraFuture,
               builder: (context, snapshot) {
@@ -223,11 +235,13 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
               },
             ),
           ),
+          // Му кажува на корисникот дека се обработува
           if (_isLoading)
             LinearProgressIndicator(
               color: Colors.deepOrange,
               backgroundColor: Colors.orange[100],
             ),
+            // Со _displayText го прикажува текстот
           Container(
             padding: const EdgeInsets.all(16.0),
             color: Colors.orange[100],
