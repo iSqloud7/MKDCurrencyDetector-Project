@@ -24,11 +24,19 @@ pip install -r requirements.txt
 pip install -r requirements-torch.txt
 ```
 
+#### Install ngrok
+You need to install ngrok and add your own authtokens(its highly reccomended because you get benefits),
+also you can use it without authtokens it should work*
+
+
+
 #### Start the Server
 ```bash
 cd app/
-python main.py
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload 
 ```
+and dont close the venv
+open new terminal and write ngrok http 8000 to start ngrok server(don't close this window too)
 
 ### 3. Mobile App Setup
 
@@ -39,6 +47,8 @@ flutter pub get
 ```
 
 #### Run the Application
+If you use free plan on ngrok everytime you start the server you get different url so
+you will need to paste it in base url in flutter_app/lib/config/api_config.dart (without / at the end)
 ```bash
 flutter run
 ```
