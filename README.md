@@ -74,7 +74,9 @@ Based on the achieved results and the identified limitations, the following dire
   
 ## Made By:
 Marija Dimitrieska 211117
+
 Ivan Pupinoski 223260
+
 Gjorge Prodanov 216134
 
 ---
