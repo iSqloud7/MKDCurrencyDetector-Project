@@ -79,7 +79,7 @@ Gjorge Prodanov 216134
 
 ---
 
-## Requirements
+## Requirements:
 - Python 3.x
 - Flutter SDK
 - PyCharm (recommended)
