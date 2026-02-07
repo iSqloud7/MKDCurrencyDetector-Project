@@ -28,8 +28,6 @@ pip install -r requirements-torch.txt
 You need to install ngrok and add your own authtokens(its highly reccomended because you get benefits),
 also you can use it without authtokens it should work*
 
-
-
 #### Start the Server
 ```bash
 cd app/
@@ -46,17 +44,13 @@ cd CurrencyDetectorApp/flutter_app/
 flutter pub get
 ```
 
-#### Run the Application
+### 4. Network Configuration
+
 If you use free plan on ngrok everytime you start the server you get different url so
 you will need to paste it in base url in flutter_app/lib/config/api_config.dart (without / at the end)
 ```bash
 flutter run
 ```
-
-### 4. Network Configuration
-
-- Ensure your mobile device and server are on the same IP address/network
-- Configure IP addresses in `CurrencyDetectorApp/flutter_app/lib/config/api_config.dart`
 
 ### 5. Testing the Application
 
@@ -65,6 +59,19 @@ flutter run
 3. Verify the connection is established
 4. Use your phone's camera to capture currency images
 
+### 6. Future directions for development
+
+Based on the achieved results and the identified limitations, the following directions for future improvements are proposed:
+### Improvement of coin detection:
+  Expanding the dataset with more coin samples in different conditions (worn, at an angle, different lighting).
+  Experimenting with larger models (YOLOv8m or YOLOv8l) specifically trained for small objects.
+  Implementation of specialized preprocessing techniques for coins (edge ​​enhancement, circular detection).
+
+### Multiple object detection:
+  Optimization of the system for simultaneous detection of multiple currencies. 
+  Implementation of an algorithm for summing the total value of the detected currencies.
+  Addition of visual indicators (bounding boxes) to the display for clear identification of each currency.
+  
 ## Made By
 Marija Dimitrieska 211117
 Ivan Pupinoski 223260
