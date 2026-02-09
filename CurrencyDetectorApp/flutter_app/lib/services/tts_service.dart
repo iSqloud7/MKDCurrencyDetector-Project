@@ -1,50 +1,43 @@
-import 'package:flutter_tts/flutter_tts.dart';
+import 'dart:convert';
+import 'dart:typed_data';
+import 'package:audioplayers/audioplayers.dart';
 
-// Сервис за звучно читање на детекцијата
 class TtsService {
-  final FlutterTts _tts = FlutterTts();
-  bool _isInitialized = false;
+  final AudioPlayer _player = AudioPlayer();
 
-  TtsService() {
-    _initialize();
-  }
+  bool _isPlaying = false;
 
-  Future<void> _initialize() async {
+  /// Play ElevenLabs TTS audio (base64 MP3 from backend)
+  Future<void> playFromBase64(String? base64Audio) async {
+    if (base64Audio == null || base64Audio.isEmpty) {
+      print("TTS: No audio received");
+      return;
+    }
+
     try {
-      // Поставување на јазик
-      // Доколку има македонски, ако не успее користи англиски
-      for (var code in ['mk-MK', 'mk', 'en-US']) {
-        var result = await _tts.setLanguage(code);
-        print("Setting TTS language $code: result $result");
-        if (result == 1) break;
+      // Stop previous audio
+      if (_isPlaying) {
+        await _player.stop();
       }
 
-      await _tts.setSpeechRate(0.45);
-      await _tts.setVolume(1.0);
-      await _tts.setPitch(1.0);
+      Uint8List audioBytes = base64Decode(base64Audio);
 
-      await _tts.awaitSpeakCompletion(true);
+      await _player.play(
+        BytesSource(audioBytes),
+      );
 
-      _isInitialized = true;
-      print("TTS Initialized");
+      _isPlaying = true;
     } catch (e) {
-      _isInitialized = false;
-      print('TTS init error: $e');
+      print("TTS playback error: $e");
     }
   }
 
-  Future<void> speak(String text) async {
-    if (!_isInitialized) await _initialize();
-    try {
-      await _tts.stop();
-      await Future.delayed(const Duration(milliseconds: 50));
-      await _tts.speak(text);
-    } catch (e) {
-      print('TTS speak error: $e');
-    }
+  Future<void> stop() async {
+    await _player.stop();
+    _isPlaying = false;
   }
 
   void dispose() {
-    _tts.stop();
+    _player.dispose();
   }
 }

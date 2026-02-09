@@ -6,29 +6,34 @@ class DetectionResult {
   final int count;
   final String? message;
 
+  // 🔊 ElevenLabs base64 MP3 audio from backend
+  final String? ttsAudio;
+
   DetectionResult({
     required this.success,
     this.type,
     required this.detections,
     required this.count,
     this.message,
+    this.ttsAudio,
   });
 
-// Зема JSON објект и го претвора во DetectionResult  објект
+  // Зема JSON објект и го претвора во DetectionResult објект
   factory DetectionResult.fromJson(Map<String, dynamic> json) {
     return DetectionResult(
       success: json['success'] ?? false,
       type: json['type'],
-
       detections: (json['detections'] as List<dynamic>?)
-          ?.map((e) => Detection.fromJson(e))
-          .toList() ??
+              ?.map((e) => Detection.fromJson(e))
+              .toList() ??
           [],
       count: json['count'] ?? 0,
       message: json['message'],
+      ttsAudio: json['tts_audio'], // 👈 IMPORTANT
     );
   }
 
+  // 🖥️ UI text only (NOT for audio)
   String toDisplayText() {
     if (!success || detections.isEmpty) {
       return message ?? "Не е детектирана валута";
@@ -46,7 +51,7 @@ class DetectionResult {
     }
   }
 
-// Преведување на името на класата во име на валутата на македонски јазик
+  // Преведување на името на класата во македонско име
   String _formatCurrencyName(String className) {
     final Map<String, String> currencyMap = {
       '10_note': 'десет денари',
@@ -66,8 +71,9 @@ class DetectionResult {
   }
 }
 
-// Детекција на објект, која вклучува идентификатор на детекција,
-// класа од моделот, како и колку е сигурен моделот во детекцијата
+// ==============================
+// SINGLE DETECTION
+// ==============================
 class Detection {
   final int id;
   final String className;
@@ -89,8 +95,8 @@ class Detection {
       className: json['class_name'] ?? 'Unknown',
       confidence: (json['confidence'] ?? 0).toDouble(),
       bbox: (json['bbox'] as List<dynamic>?)
-          ?.map((e) => (e as num).toDouble())
-          .toList() ??
+              ?.map((e) => (e as num).toDouble())
+              .toList() ??
           [],
       image: json['image'],
     );
