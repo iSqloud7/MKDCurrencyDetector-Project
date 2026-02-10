@@ -21,7 +21,6 @@ from core.config import (
 
 from services.inference import init_detector, detect_currency
 from services.extraction import extract_single_currency
-from services.tts import text_to_speech   # 👈 ELEVENLABS HERE
 from core.logging import get_logger
 
 logger = get_logger(__name__)
@@ -175,32 +174,38 @@ async def detect(file: UploadFile = File(...), extract_images: bool = True):
                     )
                     _, buffer = cv2.imencode(".png", extracted)
                     data["image"] = (
-                        "data:image/png;base64,"
-                        + base64.b64encode(buffer).decode()
+                            "data:image/png;base64,"
+                            + base64.b64encode(buffer).decode()
                     )
                 except Exception:
                     data["image"] = None
 
             detections_formatted.append(data)
+        tts_text = mk_detection_message(detections_formatted)
+        tts_text = mk_detection_message(detections_formatted)
 
-        # 🔊 ELEVENLABS TTS
-        try:
-            message = mk_detection_message(detections_formatted)
-            audio_bytes = text_to_speech(message)
-            audio_b64 = base64.b64encode(audio_bytes).decode("utf-8")
-        except Exception as e:
-            logger.warning(f"TTS failed: {e}")
-            audio_b64 = None
+        response_payload = {
+            "success": True,
+            "type": detected_type,
+            "detections": detections_formatted,
+            "count": len(detections_formatted),
+            "tts_text": tts_text,
+        }
 
-        return JSONResponse(
-            {
-                "success": True,
-                "type": detected_type,
-                "detections": detections_formatted,
-                "count": len(detections_formatted),
-                "tts_audio": audio_b64,  # 👈 FRONTEND CAN PLAY THIS
-            }
-        )
+
+        logger.info("=== /detect RESPONSE PAYLOAD ===")
+        logger.info(f"Type: {detected_type}")
+        logger.info(f"Count: {len(detections_formatted)}")
+        logger.info(f"TTS text: {tts_text}")
+        logger.info("Detections:")
+        for d in detections_formatted:
+            logger.info(
+                f"  - {d['class_name']} | conf={d['confidence']:.3f} | bbox={d['bbox']}"
+            )
+        logger.info("=== END RESPONSE ===")
+
+        return JSONResponse(response_payload)
+
 
     except HTTPException:
         raise

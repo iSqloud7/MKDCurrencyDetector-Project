@@ -6,8 +6,8 @@ class DetectionResult {
   final int count;
   final String? message;
 
-  // 🔊 ElevenLabs base64 MP3 audio from backend
-  final String? ttsAudio;
+  // 🗣️ TEXT that will be sent to ElevenLabs on frontend
+  final String? ttsText;
 
   DetectionResult({
     required this.success,
@@ -15,13 +15,13 @@ class DetectionResult {
     required this.detections,
     required this.count,
     this.message,
-    this.ttsAudio,
+    this.ttsText,
   });
 
   // Зема JSON објект и го претвора во DetectionResult објект
   factory DetectionResult.fromJson(Map<String, dynamic> json) {
     return DetectionResult(
-      success: json['success'] ?? false,
+      success: json['success'] ?? true,
       type: json['type'],
       detections: (json['detections'] as List<dynamic>?)
               ?.map((e) => Detection.fromJson(e))
@@ -29,11 +29,11 @@ class DetectionResult {
           [],
       count: json['count'] ?? 0,
       message: json['message'],
-      ttsAudio: json['tts_audio'], // 👈 IMPORTANT
+      ttsText: json['tts_text'], // ✅ THIS is what backend sends
     );
   }
 
-  // 🖥️ UI text only (NOT for audio)
+  // 🖥️ UI text only
   String toDisplayText() {
     if (!success || detections.isEmpty) {
       return message ?? "Не е детектирана валута";
@@ -51,7 +51,6 @@ class DetectionResult {
     }
   }
 
-  // Преведување на името на класата во македонско име
   String _formatCurrencyName(String className) {
     final Map<String, String> currencyMap = {
       '10_note': 'десет денари',
@@ -68,37 +67,5 @@ class DetectionResult {
       '50_coin': 'педесет денари',
     };
     return currencyMap[className] ?? className.replaceAll('_', ' ');
-  }
-}
-
-// ==============================
-// SINGLE DETECTION
-// ==============================
-class Detection {
-  final int id;
-  final String className;
-  final double confidence;
-  final List<double> bbox;
-  final String? image;
-
-  Detection({
-    required this.id,
-    required this.className,
-    required this.confidence,
-    required this.bbox,
-    this.image,
-  });
-
-  factory Detection.fromJson(Map<String, dynamic> json) {
-    return Detection(
-      id: json['id'] ?? 0,
-      className: json['class_name'] ?? 'Unknown',
-      confidence: (json['confidence'] ?? 0).toDouble(),
-      bbox: (json['bbox'] as List<dynamic>?)
-              ?.map((e) => (e as num).toDouble())
-              .toList() ??
-          [],
-      image: json['image'],
-    );
   }
 }

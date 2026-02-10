@@ -41,7 +41,3 @@ ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png"}
 USE_PREPROCESSING = True
 USE_ENSEMBLE = True
 
-# === TTS SETTINGS ===
-
-TTS_ENABLED = True
-TTS_LANGUAGE = "mk"
