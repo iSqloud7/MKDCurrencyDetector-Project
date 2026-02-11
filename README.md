@@ -21,35 +21,41 @@ This project includes separate YOLOv8 training notebooks for different detection
     Purpose: Binary detector (Coin vs Background)
 
     Notebook location:
+    
     ```bash
       /yolov8_training/notebooks/train/train_binary.ipynb
     ```
     
     Dataset location:
+    
     ```bash
       /datasets/binary/data.yaml
     ```
     
     Output model:
-  ```bash
+    
+    ```bash
       models/binary_detector/weights/
-  ```
+    ```
 
 🔹 train_banknote.ipynb
 
     Purpose: Banknote detector
 
     Notebook location:
-  ```bash
+    
+    ```bash
       /yolov8_training/notebooks/train/train_banknote.ipynb
-  ```
+    ```
 
     Dataset location:
-  ```bash
+    
+    ```bash
       /yolov8_training/datasets/banknote/data.yaml
-  ```
+    ```
 
     Output model:
+    
   ```bash
       models/banknote_detector/weights/
   ```
@@ -59,19 +65,22 @@ This project includes separate YOLOv8 training notebooks for different detection
     Purpose: Multi-class coin detector
 
     Notebook location:
+    
   ```bash
       /yolov8_training/notebooks/train/train_coin.ipynb
   ```
 
     Dataset location:
-  ```bash
+    
+    ```bash
       /yolov8_training/datasets/coin/data.yaml
     ```
 
     Output model:
-  ```bash
+    
+    ```bash
       models/coin_detector/weights/
-  ```
+    ```
 
 ### 3. Backend Setup.
 
