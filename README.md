@@ -17,7 +17,7 @@ git clone https://github.com/iSqloud7/MKD-Currency-Detector.git
 This project includes separate YOLOv8 training notebooks for different detection tasks.
 
 #### 🔹 train_binary.ipynb
-- **Purpose:** Binary detector (Coin vs Background)
+- **Purpose:** Binary detector (Coin or Banknote)
 - **Notebook location:** `/yolov8_training/notebooks/train/train_binary.ipynb`
 - **Dataset location:** `/datasets/binary/data.yaml`
 - **Output model:** `models/binary_detector/weights/`
