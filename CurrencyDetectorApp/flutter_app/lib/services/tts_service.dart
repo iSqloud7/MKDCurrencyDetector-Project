@@ -1,36 +1,43 @@
 import 'dart:typed_data';
-
 import 'package:audioplayers/audioplayers.dart';
 
-Future<void> playFromBytes(Uint8List audioBytes) async {
-  try {
-    if (audioBytes.isEmpty) {
-      print('❌ TTS: empty audio');
-      return;
+class TtsService {
+  final AudioPlayer _player = AudioPlayer();
+  bool _isPlaying = false;
+
+  Future<void> playFromBytes(Uint8List audioBytes) async {
+    try {
+      if (audioBytes.isEmpty) {
+        print('❌ TTS: audioBytes is empty');
+        return;
+      }
+
+      print('🔊 TTS bytes received: ${audioBytes.length}');
+
+      if (_isPlaying) {
+        await _player.stop();
+        _isPlaying = false;
+      }
+
+      _isPlaying = true;
+
+      await _player.play(
+        BytesSource(audioBytes),
+        volume: 1.0,
+      );
+
+      _player.onPlayerComplete.listen((_) {
+        _isPlaying = false;
+        print('✅ TTS playback completed');
+      });
+    } catch (e, stack) {
+      _isPlaying = false;
+      print('❌ TTS playback error: $e');
+      print(stack);
     }
+  }
 
-    print('🔊 Playing TTS (${audioBytes.length} bytes)');
-
-    await _player.setAudioContext(
-      AudioContext(
-        android: AudioContextAndroid(
-          isSpeakerphoneOn: true,
-          stayAwake: true,
-          contentType: AndroidContentType.speech,
-          usageType: AndroidUsageType.media,
-          audioFocus: AndroidAudioFocus.gain,
-        ),
-      ),
-    );
-
-    if (_isPlaying) {
-      await _player.stop();
-    }
-
-    _isPlaying = true;
-    await _player.play(BytesSource(audioBytes));
-  } catch (e) {
-    _isPlaying = false;
-    print("❌ TTS playback error: $e");
+  Future<void> dispose() async {
+    await _player.dispose();
   }
 }
