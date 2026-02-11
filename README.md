@@ -36,7 +36,13 @@ uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 and dont close the venv
 open new terminal and write ngrok http 8000 to start ngrok server (don't close this window too)
 
-### 3. Mobile App Setup.
+### 3. Dataset Download (Roboflow → YOLOv8)
+  This project uses a dataset hosted on Roboflow.
+  The script in MKDCurrencyDetector-Project/CurrencyDetectorApp/yolov8_training/notebooks/download_from_roboflow.ipynb
+  downloads version 9 of the dataset in YOLOv8 format and moves it into the project directory structure. After running the script, the dataset will be placed in: yolov8_training/datasets/raw_all_classes/
+  Link to the dataset: https://app.roboflow.com/datasciencepro/mkd-currency-recognition_v1/9
+  
+### 4. Mobile App Setup.
 
 #### Install Flutter Dependencies.
 ```bash
@@ -44,7 +50,7 @@ cd CurrencyDetectorApp/flutter_app/
 flutter pub get
 ```
 
-### 4. Network Configuration.
+### Network Configuration.
 
 If you use free plan on ngrok everytime you start the server you get different url so
 you will need to paste it in base url in flutter_app/lib/config/api_config.dart (without / at the end)
@@ -71,6 +77,11 @@ Based on the achieved results and the identified limitations, the following dire
   Optimization of the system for simultaneous detection of multiple currencies. 
   Implementation of an algorithm for summing the total value of the detected currencies.
   Addition of visual indicators (bounding boxes) to the display for clear identification of each currency.
+
+### 7. Notes
+  Capturing and processing currency images works significantly faster when using a GPU instead of a CPU.
+  GPU acceleration is highly recommended for model training and real-time detection.
+  Make sure CUDA is properly installed if using an NVIDIA GPU.
   
 ## Made By:
 Marija Dimitrieska 211117
