@@ -6,8 +6,71 @@
 ```bash
 git clone https://github.com/iSqloud7/MKD-Currency-Detector.git
 ```
+### 2. Dataset Download (Roboflow → YOLOv8)
+  This project uses a dataset hosted on Roboflow.
+  The script in MKDCurrencyDetector-Project/CurrencyDetectorApp/yolov8_training/notebooks/download_from_roboflow.ipynb
+  downloads version 9 of the dataset in YOLOv8 format and moves it into the project directory structure. After running the script, the dataset will be placed in: yolov8_training/datasets/raw_all_classes/
+  Link to the dataset: https://app.roboflow.com/datasciencepro/mkd-currency-recognition_v1/9
 
-### 2. Backend Setup.
+### 3. Model Training
+
+This project includes separate YOLOv8 training notebooks for different detection tasks.
+
+🔹 train_binary.ipynb
+
+Purpose: Binary detector (Coin vs Background)
+
+Notebook location:
+
+/yolov8_training/notebooks/train/train_binary.ipynb
+
+
+Dataset location:
+
+/datasets/binary/data.yaml
+
+
+Output model:
+
+models/binary_detector/weights/
+
+🔹 train_banknote.ipynb
+
+Purpose: Banknote detector
+
+Notebook location:
+
+/yolov8_training/notebooks/train/train_banknote.ipynb
+
+
+Dataset location:
+
+/yolov8_training/datasets/banknote/data.yaml
+
+
+Output model:
+
+models/banknote_detector/weights/
+
+🔹 train_coin.ipynb
+
+Purpose: Multi-class coin detector
+
+Notebook location:
+
+/yolov8_training/notebooks/train/train_coin.ipynb
+
+
+Dataset location:
+
+/yolov8_training/datasets/coin/data.yaml
+
+
+Output model:
+
+models/coin_detector/weights/
+
+### 3. Backend Setup.
 
 #### Navigate to the Backend Directory.
 ```bash
@@ -36,12 +99,7 @@ uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 and dont close the venv
 open new terminal and write ngrok http 8000 to start ngrok server (don't close this window too)
 
-### 3. Dataset Download (Roboflow → YOLOv8)
-  This project uses a dataset hosted on Roboflow.
-  The script in MKDCurrencyDetector-Project/CurrencyDetectorApp/yolov8_training/notebooks/download_from_roboflow.ipynb
-  downloads version 9 of the dataset in YOLOv8 format and moves it into the project directory structure. After running the script, the dataset will be placed in: yolov8_training/datasets/raw_all_classes/
-  Link to the dataset: https://app.roboflow.com/datasciencepro/mkd-currency-recognition_v1/9
-  
+
 ### 4. Mobile App Setup.
 
 #### Install Flutter Dependencies.
