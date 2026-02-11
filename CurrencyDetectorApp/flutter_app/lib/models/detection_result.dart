@@ -46,7 +46,9 @@ class DetectionResult {
       final currencyName = _formatCurrencyName(det.className);
       final typeText = type == 'coin' ? 'монета' : 'банкнота';
       final confidence = (det.confidence * 100).toStringAsFixed(0);
-      return 'Детектирана $typeText: $currencyName ($confidence% сигурност)';
+//       return 'Детектирана $typeText: $currencyName ($confidence% сигурност)';
+      return 'Детектирана $typeText: $currencyName ';
+
     } else {
       final typeText = type == 'coin' ? 'монети' : 'банкноти';
       return 'Детектирани ${detections.length} $typeText';
