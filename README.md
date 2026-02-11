@@ -16,73 +16,26 @@ git clone https://github.com/iSqloud7/MKD-Currency-Detector.git
 
 This project includes separate YOLOv8 training notebooks for different detection tasks.
 
-🔹 train_binary.ipynb
+#### 🔹 train_binary.ipynb
+- **Purpose:** Binary detector (Coin vs Background)
+- **Notebook location:** `/yolov8_training/notebooks/train/train_binary.ipynb`
+- **Dataset location:** `/datasets/binary/data.yaml`
+- **Output model:** `models/binary_detector/weights/`
 
-    Purpose: Binary detector (Coin vs Background)
+#### 🔹 train_banknote.ipynb
+- **Purpose:** Banknote detector
+- **Notebook location:** `/yolov8_training/notebooks/train/train_banknote.ipynb`
+- **Dataset location:** `/yolov8_training/datasets/banknote/data.yaml`
+- **Output model:** `models/banknote_detector/weights/`
 
-    Notebook location:
-    
-    ```bash
-      /yolov8_training/notebooks/train/train_binary.ipynb
-    ```
-    
-    Dataset location:
-    
-    ```bash
-      /datasets/binary/data.yaml
-    ```
-    
-    Output model:
-    
-    ```bash
-      models/binary_detector/weights/
-    ```
+#### 🔹 train_coin.ipynb
+- **Purpose:** Multi-class coin detector
+- **Notebook location:** `/yolov8_training/notebooks/train/train_coin.ipynb`
+- **Dataset location:** `/yolov8_training/datasets/coin/data.yaml`
+- **Output model:** `models/coin_detector/weights/`
 
-🔹 train_banknote.ipynb
 
-    Purpose: Banknote detector
-
-    Notebook location:
-    
-    ```bash
-      /yolov8_training/notebooks/train/train_banknote.ipynb
-    ```
-
-    Dataset location:
-    
-    ```bash
-      /yolov8_training/datasets/banknote/data.yaml
-    ```
-
-    Output model:
-    
-  ```bash
-      models/banknote_detector/weights/
-  ```
-
-🔹 train_coin.ipynb
-
-    Purpose: Multi-class coin detector
-
-    Notebook location:
-    
-  ```bash
-      /yolov8_training/notebooks/train/train_coin.ipynb
-  ```
-
-    Dataset location:
-    
-    ```bash
-      /yolov8_training/datasets/coin/data.yaml
-    ```
-
-    Output model:
-    
-    ```bash
-      models/coin_detector/weights/
-    ```
-
-### 3. Backend Setup.
+### 4. Backend Setup.
 
 #### Navigate to the Backend Directory.
 ```bash
@@ -112,7 +65,7 @@ and dont close the venv
 open new terminal and write ngrok http 8000 to start ngrok server (don't close this window too)
 
 
-### 4. Mobile App Setup.
+### 5. Mobile App Setup.
 
 #### Install Flutter Dependencies.
 ```bash
@@ -128,14 +81,14 @@ you will need to paste it in base url in flutter_app/lib/config/api_config.dart 
 flutter run
 ```
 
-### 5. Testing the Application.
+### 6. Testing the Application.
 
 1. Start the server in PyCharm
 2. Run the mobile application in Android Studio
 3. Verify the connection is established
 4. Use your phone's camera to capture currency images
 
-### 6. Future directions for development.
+### 7. Future directions for development.
 
 Based on the achieved results and the identified limitations, the following directions for future improvements are proposed:
 ### Improvement of coin detection:
@@ -148,7 +101,7 @@ Based on the achieved results and the identified limitations, the following dire
   Implementation of an algorithm for summing the total value of the detected currencies.
   Addition of visual indicators (bounding boxes) to the display for clear identification of each currency.
 
-### 7. Notes
+### 8. Notes
   Capturing and processing currency images works significantly faster when using a GPU instead of a CPU.
   GPU acceleration is highly recommended for model training and real-time detection.
   Make sure CUDA is properly installed if using an NVIDIA GPU.
