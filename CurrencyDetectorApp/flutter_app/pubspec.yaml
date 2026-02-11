@@ -12,12 +12,13 @@ dependencies:
   camera: ^0.10.5+5
   http: ^1.1.0
   image: ^4.1.1
-  flutter_tts: 3.8.3
+#  flutter_tts: 3.8.3
   path_provider: ^2.1.1
   path: ^1.8.3
   audioplayers: ^6.1.0
 
   cupertino_icons: ^1.0.2
+  flutter_dotenv: ^6.0.0
 
 dev_dependencies:
   flutter_test:
@@ -26,3 +27,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - .env

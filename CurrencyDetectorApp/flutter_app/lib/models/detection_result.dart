@@ -1,3 +1,5 @@
+import 'detection.dart';
+
 // Го претставува целосниот резултат од детекцијата
 class DetectionResult {
   final bool success;
