@@ -34,8 +34,21 @@ This project includes separate YOLOv8 training notebooks for different detection
 - **Dataset location:** `/yolov8_training/datasets/coin/data.yaml`
 - **Output model:** `models/coin_detector/weights/`
 
+### 4. Model Export
+  After training, run:
 
-### 4. Backend Setup.
+  `yolov8_training/notebooks/export_models.ipynb`
+
+  This notebook:
+
+- Copies trained `best.pt` models
+- Renames them
+- Moves them to `backend/app/models/`
+- Verifies each model loads correctly
+
+This ensures the backend API uses the latest trained models.
+
+### 5. Backend Setup.
 
 #### Navigate to the Backend Directory.
 ```bash
@@ -65,7 +78,7 @@ and dont close the venv
 open new terminal and write ngrok http 8000 to start ngrok server (don't close this window too)
 
 
-### 5. Mobile App Setup.
+### 6. Mobile App Setup.
 
 #### Install Flutter Dependencies.
 ```bash
@@ -81,14 +94,14 @@ you will need to paste it in base url in flutter_app/lib/config/api_config.dart 
 flutter run
 ```
 
-### 6. Testing the Application.
+### 7. Testing the Application.
 
 1. Start the server in PyCharm
 2. Run the mobile application in Android Studio
 3. Verify the connection is established
 4. Use your phone's camera to capture currency images
 
-### 7. Future directions for development.
+### 8. Future directions for development.
 
 Based on the achieved results and the identified limitations, the following directions for future improvements are proposed:
 ### Improvement of coin detection:
@@ -101,7 +114,7 @@ Based on the achieved results and the identified limitations, the following dire
   Implementation of an algorithm for summing the total value of the detected currencies.
   Addition of visual indicators (bounding boxes) to the display for clear identification of each currency.
 
-### 8. Notes
+### 9. Notes
   Capturing and processing currency images works significantly faster when using a GPU instead of a CPU.
   GPU acceleration is highly recommended for model training and real-time detection.
   Make sure CUDA is properly installed if using an NVIDIA GPU.
