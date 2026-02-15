@@ -15,7 +15,7 @@ class ElevenLabsService {
     final apiKey = dotenv.env['ELEVENLABS_API_KEY'];
 
     if (apiKey == null) {
-      print('❌ API key not found in .env');
+      print('API key not found in .env');
       return null;
     }
 
@@ -36,7 +36,7 @@ class ElevenLabsService {
         'voice_settings': {
           'stability': 0.5,   // колку гласот е стабилен (0-1)
           'similarity_boost': 0.8, // колку да личи на voice sample (0-1)
-          'rate': 0.7, // 🐢 забавување на говорот, 1.0 = нормална брзина
+          'rate': 0.7, // забавување на говорот, 1.0 = нормална брзина
           // 'pitch': 1.0, // можеш да промениш и висина ако сакаш
           // 'volume': 1.0,
         },
@@ -47,7 +47,7 @@ class ElevenLabsService {
     if (response.statusCode == 200) {
       return response.bodyBytes;
     } else {
-      print('❌ ElevenLabs error ${response.statusCode}');
+      print('ElevenLabs error ${response.statusCode}');
       print(response.body);
       return null;
     }

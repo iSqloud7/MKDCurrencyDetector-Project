@@ -8,11 +8,11 @@ class TtsService {
   Future<void> playFromBytes(Uint8List audioBytes) async {
     try {
       if (audioBytes.isEmpty) {
-        print('❌ TTS: audioBytes is empty');
+        print('TTS: audioBytes is empty');
         return;
       }
 
-      print('🔊 TTS bytes received: ${audioBytes.length}');
+      print('TTS bytes received: ${audioBytes.length}');
 
       if (_isPlaying) {
         await _player.stop();
@@ -28,11 +28,11 @@ class TtsService {
 
       _player.onPlayerComplete.listen((_) {
         _isPlaying = false;
-        print('✅ TTS playback completed');
+        print('TTS playback completed');
       });
     } catch (e, stack) {
       _isPlaying = false;
-      print('❌ TTS playback error: $e');
+      print('TTS playback error: $e');
       print(stack);
     }
   }
